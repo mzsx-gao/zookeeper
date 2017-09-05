@@ -11,11 +11,18 @@
 
     <artifactId>zookeeper-base</artifactId>
 
+    <packaging>jar</packaging>
+
     <properties>
-        <zookeeper.version>3.4.5</zookeeper.version>
+        <zookeeper.version>3.4.8</zookeeper.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.1</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
