@@ -25,9 +25,9 @@ public class ZookeeperBase {
 
 
     //zookeeper地址
-    static final String CONNECT_ADDR = "172.16.35.204:2181,172.16.35.204:2182,172.16.35.204:2183";
+    private static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
     //session超时时间
-    static final int SESSION_OUTTIME = 2000;//ms
+    private static final int SESSION_OUTTIME = 2000;//ms
 
     /**
      *  创建父节点
@@ -139,7 +139,7 @@ public class ZookeeperBase {
      *     客户端并不是可以随意设置这个会话超时时间，在ZK服务器端对会话超时时间是有限制的，主要是minSessionTimeout和maxSessionTimeout这两个参数设置的。
      *     如果客户端设置的超时时间不在这个范围，那么会被强制设置为最大或最小时间。 默认的Session超时时间是在2 * tickTime ~ 20 * tickTime
      */
-    public  ZooKeeper getZk() throws Exception{
+    public ZooKeeper getZk() throws Exception{
 
         //信号量，阻塞程序执行，用于等待zookeeper连接成功，发送成功信号
         final CountDownLatch connectedSemaphore = new CountDownLatch(1);
