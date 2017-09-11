@@ -18,22 +18,30 @@ import org.junit.Test;
 public class CuratorBase {
 	
 	/** zookeeper地址 */
-	static final String CONNECT_ADDR = "172.16.35.204:2181,172.16.35.204:2182,172.16.35.204:2183";
+	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
 	/** session超时时间 */
 	static final int SESSION_OUTTIME = 5000;//ms 
 	
 	public static void main(String[] args) throws Exception {
+	    //建立连接
         CuratorFramework cf = getConnection();
+        //创建节点
         createNode(cf);
-//        deleteNode(cf);
+        //读取节点内容
         readNode(cf);
+        //修改节点内容
         editNode(cf);
-
+        //查询super节点的子节点
+        getChildren(cf);
+        //删除节点
+        deleteNode(cf);
+        //绑定回调接口
+        bindCallBack(cf);
 	}
 
 	//建立连接
 	private static CuratorFramework getConnection() throws Exception{
-        //1 重试策略：重试时间为1s 重试10次
+        //1 重试策略：重试时间间隔为1s 重试10次
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
         //2 通过工厂创建连接
         CuratorFramework cf = CuratorFrameworkFactory.builder()
@@ -69,18 +77,31 @@ public class CuratorBase {
     //读取节点
     private static void readNode(CuratorFramework cf) throws Exception{
         String ret1 = new String(cf.getData().forPath("/super/c2"));
-		System.out.println(ret1);
+		System.out.println("读取节点super/c2的内容:"+ret1);
     }
 
     //修改节点
     private static void editNode(CuratorFramework cf) throws Exception{
         cf.setData().forPath("/super/c2", "修改c2内容".getBytes());
 		String ret2 = new String(cf.getData().forPath("/super/c2"));
-		System.out.println(ret2);
+		System.out.println("修改节点super/c2后的内容:"+ret2);
+    }
+
+    //读取子节点getChildren方法 和 判断节点是否存在checkExists方法
+    private static void getChildren(CuratorFramework cf) throws Exception{
+        System.out.println("获取节点super的子节点...");
+        List<String> list = cf.getChildren().forPath("/super");
+        for(String p : list){
+            System.out.println("子节点:"+p);
+        }
+        System.out.println("判断节点super/c3是否存在");
+        Stat stat = cf.checkExists().forPath("/super/c3");
+        System.out.println(stat);
     }
 
     //绑定回调函数
     private static void bindCallBack(CuratorFramework cf) throws Exception{
+        System.out.println("测试回调接口...");
         ExecutorService pool = Executors.newCachedThreadPool();
         cf.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT)
                 .inBackground(new BackgroundCallback() {
@@ -93,21 +114,6 @@ public class CuratorBase {
                 }, pool)
                 .forPath("/super/c3","c3内容".getBytes());
         Thread.sleep(Integer.MAX_VALUE);
-    }
-
-    //读取子节点getChildren方法 和 判断节点是否存在checkExists方法
-    private static void getChildren(CuratorFramework cf) throws Exception{
-        List<String> list = cf.getChildren().forPath("/super");
-        for(String p : list){
-            System.out.println(p);
-        }
-
-        Stat stat = cf.checkExists().forPath("/super/c3");
-        System.out.println(stat);
-
-        cf.delete().guaranteed().deletingChildrenIfNeeded().forPath("/super");
-
-        cf.delete().guaranteed().deletingChildrenIfNeeded().forPath("/super");
     }
 
 }
