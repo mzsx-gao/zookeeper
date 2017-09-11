@@ -25,5 +25,6 @@
     </build>
     <modules>
         <module>zookeeper-base</module>
+        <module>zookeeper-zkClient</module>
     </modules>
 </project>
