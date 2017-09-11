@@ -26,5 +26,6 @@
     <modules>
         <module>zookeeper-base</module>
         <module>zookeeper-zkClient</module>
+        <module>zookeeper-curator</module>
     </modules>
 </project>
