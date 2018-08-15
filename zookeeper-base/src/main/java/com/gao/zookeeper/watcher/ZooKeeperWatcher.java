@@ -4,6 +4,8 @@ import org.apache.zookeeper.*;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.data.Stat;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,54 +21,55 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ZooKeeperWatcher implements Watcher{
 
-    /** 定义原子变量 */
+    //定义session失效时间
+    private static final int SESSION_TIMEOUT = 100000;
+
+    //zookeeper服务器地址,多个地址","隔开
+    private static final String CONNECTION_ADDR = "172.16.31.137:2181";
+
+    //定义原子变量
     AtomicInteger seq = new AtomicInteger();
-    /** 定义session失效时间 */
-    private static final int SESSION_TIMEOUT = 10000;
-    /** zookeeper服务器地址 */
-    private static final String CONNECTION_ADDR = "172.16.35.204:2181,172.16.35.204:2182,172.16.35.204:2183";
-    /** zk父路径设置 */
-    private static final String PARENT_PATH = "/testWatch";
-    /** zk子路径设置 */
-    private static final String CHILDREN_PATH = "/testWatch/children";
-    /** 进入标识 */
-    private static final String LOG_PREFIX_OF_MAIN = "【Main】";
-    /** zk变量 */
-    private ZooKeeper zk = null;
-    /** 信号量设置，用于等待zookeeper连接建立之后 通知阻塞程序继续向下执行 */
+
+    //信号量设置，用于等待zookeeper连接建立之后 通知阻塞程序继续向下执行
     private CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
-    /**
-     * 主要测试watch功能
+    private ZooKeeper zk = null;
+
+    /*
+      主要测试watch功能:
+        ① exists操作上的watch，在被监视的Znode创建、删除或数据更新时被触发。
+        ② getData操作上的watch，在被监视的Znode删除或数据更新时被触发。在被创建时不能被触发，因为只有Znode一定存在，getData操作才会成功。
+        ③ getChildren操作上的watch，在被监视的Znode的子节点更新或删除，或是这个Znode自身被删除时被触发。
+        可以通过查看watch事件类型来区分是Znode，还是他的子节点被删除：NodeDelete表示Znode被删除，NodeChildrenChanged表示子节点被删除
      */
     public static void main(String[] args) throws Exception {
-        //建立watcher
+
         ZooKeeperWatcher zkWatch = new ZooKeeperWatcher();
-        //创建连接
         zkWatch.createConnection(CONNECTION_ADDR, SESSION_TIMEOUT);
-        // 清理节点
-        zkWatch.deleteAllTestPath();
+
         //创建父节点
-        zkWatch.createPath(PARENT_PATH, System.currentTimeMillis() + "");
-        Thread.sleep(1000);
-        // 读取父节点数据
-        zkWatch.readData(PARENT_PATH, true);
-        // 读取子节点
-        zkWatch.getChildren(PARENT_PATH, true);
+        zkWatch.createPath("/parentNode", System.currentTimeMillis() + "");
+
+        //读取父节点数据
+        zkWatch.readData("/parentNode", true);
+
         // 更新父节点数据
-        zkWatch.writeData(PARENT_PATH, System.currentTimeMillis() + "");
-        Thread.sleep(1000);
+        zkWatch.updateData("/parentNode", System.currentTimeMillis() + "");
+
+        // 读取子节点(getChildren负责设置孩子watch)
+        zkWatch.getChildren("/parentNode", true);
+
         // 创建子节点
-        zkWatch.createPath(CHILDREN_PATH, System.currentTimeMillis() + "");
-        Thread.sleep(1000);
+        zkWatch.createPath("/parentNode/childNode", System.currentTimeMillis() + "");
+
         //修改子节点数据
-        zkWatch.writeData(CHILDREN_PATH, System.currentTimeMillis() + "");
-        Thread.sleep(1000);
+        zkWatch.updateData("/parentNode/childNode", System.currentTimeMillis() + "");
+
         // 清理节点
         zkWatch.deleteAllTestPath();
-        Thread.sleep(1000);
         zkWatch.releaseConnection();
     }
+
 
     /**
      * 收到来自Server的Watcher通知后的处理。
@@ -74,54 +77,31 @@ public class ZooKeeperWatcher implements Watcher{
     @Override
     public void process(WatchedEvent event) {
         System.out.println("进入 process 。。。。。event = " + event);
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         if (event == null) {
             return;
         }
-        // 连接状态
-        Event.KeeperState keeperState = event.getState();
-        // 事件类型
-        Event.EventType eventType = event.getType();
-        // 受影响的path
-        String path = event.getPath();
+        Event.KeeperState keeperState = event.getState();// 连接状态
+        Event.EventType eventType = event.getType();// 事件类型
+        String path = event.getPath();// 受影响的path
         String logPrefix = "【Watcher-" + this.seq.incrementAndGet() + "】";
         System.out.println(logPrefix + "收到Watcher通知");
         System.out.println(logPrefix + "连接状态:\t" + keeperState.toString());
         System.out.println(logPrefix + "事件类型:\t" + eventType.toString());
-        if (Event.KeeperState.SyncConnected == keeperState) {
+        System.out.println(logPrefix + "受影响的path:\t" + path);
 
+        if (Event.KeeperState.SyncConnected == keeperState) {
             if (Event.EventType.None == eventType) {// 成功连接上ZK服务器
                 System.out.println(logPrefix + "成功连接上ZK服务器");
                 connectedSemaphore.countDown();
             }else if (Event.EventType.NodeCreated == eventType) {//创建节点
                 System.out.println(logPrefix + "节点创建");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 this.exists(path, true);
             }else if (EventType.NodeDataChanged == eventType) {//更新节点
                 System.out.println(logPrefix + "节点数据更新");
-                System.out.println("我看看走不走这里........");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(logPrefix + "数据内容: " + this.readData(PARENT_PATH, true));
+                System.out.println(logPrefix + "数据内容: " + this.readData("/parentNode", true));
             }else if (EventType.NodeChildrenChanged == eventType) {//更新子节点
                 System.out.println(logPrefix + "子节点变更");
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(logPrefix + "子节点列表：" + this.getChildren(PARENT_PATH, true));
+                System.out.println(logPrefix + "子节点列表：" + this.getChildren("/parentNode", true));
             }else if (EventType.NodeDeleted == eventType) {//删除节点
                 System.out.println(logPrefix + "节点 " + path + " 被删除");
             }
@@ -137,39 +117,21 @@ public class ZooKeeperWatcher implements Watcher{
     }
 
     //创建ZK连接
-    public void createConnection(String connectAddr, int sessionTimeout) {
-        this.releaseConnection();
-        try {
-            zk = new ZooKeeper(connectAddr, sessionTimeout, this);
-            System.out.println(LOG_PREFIX_OF_MAIN + "开始连接ZK服务器");
-            connectedSemaphore.await();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    //关闭ZK连接
-    public void releaseConnection() {
-        if (this.zk != null) {
-            try {
-                this.zk.close();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    public void createConnection(String connectAddr, int sessionTimeout) throws Exception{
+        System.out.println("【Main】createConnection开始。。。");
+        this.releaseConnection();//关闭zk连接
+        zk = new ZooKeeper(connectAddr, sessionTimeout, this);
+        System.out.println("【Main】" + "开始连接ZK服务器");
+        connectedSemaphore.await();
+        System.out.println("【Main】createConnection结束。。。");
     }
 
     //创建节点
-    private boolean createPath(String path, String data) {
-        try {
-            //设置监控(由于zookeeper的监控都是一次性的所以 每次必须设置监控)
-            this.zk.exists(path, true);
-            System.out.println(LOG_PREFIX_OF_MAIN + "节点创建成功, Path: " + this.zk.create(path,data.getBytes(),ZooDefs.Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT ) +", content: " + data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+    private void createPath(String path, String data) throws Exception{
+        //设置监控(由于zookeeper的监控都是一次性的所以 每次必须设置监控)
+        this.zk.exists(path, true);
+        String actualPath = this.zk.create(path,data.getBytes(),ZooDefs.Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT );
+        System.out.println("【Main】" + "节点创建成功, Path: " + actualPath +", content: " + data);
     }
 
     //读取指定节点数据内容
@@ -183,24 +145,15 @@ public class ZooKeeperWatcher implements Watcher{
     }
 
     //更新指定节点数据内容
-    private boolean writeData(String path, String data) {
-        try {
-            System.out.println(LOG_PREFIX_OF_MAIN + "更新数据成功，path：" + path + ", stat: " +
-                    this.zk.setData(path, data.getBytes(), -1));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+    private void updateData(String path, String data) throws Exception{
+        Stat stat = this.zk.setData(path, data.getBytes(), -1);
+        System.out.println("【Main】" + "更新数据成功，path：" + path + ", stat: " + stat);
     }
 
     //删除指定节点
-    private void deleteNode(String path) {
-        try {
-            this.zk.delete(path, -1);
-            System.out.println(LOG_PREFIX_OF_MAIN + "删除节点成功，path：" + path);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void deleteNode(String path) throws Exception{
+        this.zk.delete(path, -1);
+        System.out.println("【Main】" + "删除节点成功，path：" + path);
     }
 
     //判断指定节点是否存在
@@ -224,12 +177,19 @@ public class ZooKeeperWatcher implements Watcher{
     }
 
     //删除所有节点
-    private void deleteAllTestPath() {
-        if(this.exists(CHILDREN_PATH, false) != null){
-            this.deleteNode(CHILDREN_PATH);
+    private void deleteAllTestPath() throws Exception{
+        if(this.exists("/parentNode/childNode", false) != null){
+            this.deleteNode("/parentNode/childNode");
         }
-        if(this.exists(PARENT_PATH, false) != null){
-            this.deleteNode(PARENT_PATH);
+        if(this.exists("/parentNode", false) != null){
+            this.deleteNode("/parentNode");
+        }
+    }
+
+    //关闭ZK连接
+    public void releaseConnection() throws Exception{
+        if (this.zk != null) {
+            this.zk.close();
         }
     }
 }

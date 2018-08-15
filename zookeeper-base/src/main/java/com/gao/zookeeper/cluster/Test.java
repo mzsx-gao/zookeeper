@@ -13,11 +13,11 @@ import org.apache.zookeeper.ZooKeeper;
 public class Test {
 
 
-	/** zookeeper地址 */
-	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	/** session超时时间 */
+	//zookeeper地址
+	static final String CONNECT_ADDR = "172.16.31.137:2181";
+	//session超时时间
 	static final int SESSION_OUTTIME = 2000;//ms 
-	/** 信号量，阻塞程序执行，用于等待zookeeper连接成功，发送成功信号 */
+	//信号量，阻塞程序执行，用于等待zookeeper连接成功，发送成功信号
 	static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
 	
 	public static void main(String[] args) throws Exception{
@@ -47,7 +47,7 @@ public class Test {
 		//创建子节点
 //		zk.create("/super/c2", "c2".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		//创建子节点
-		zk.create("/super/c3", "c3".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+//		zk.create("/super/c3", "c3".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		//创建子节点
 //		zk.create("/super/c4", "c4".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		
@@ -61,6 +61,7 @@ public class Test {
 		//修改节点的值
 //		zk.setData("/super/c1", "modify c1".getBytes(), -1);
 //		zk.setData("/super/c2", "modify c2".getBytes(), -1);
+		zk.setData("/super/c3", "modify c2".getBytes(), -1);
 //		byte[] data = zk.getData("/super/c2", false, null);
 //		System.out.println(new String(data));		
 		
