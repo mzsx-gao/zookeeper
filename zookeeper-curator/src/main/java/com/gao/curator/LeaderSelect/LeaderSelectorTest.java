@@ -11,9 +11,6 @@ import org.apache.curator.utils.CloseableUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhuzs on 2017/4/17.
- */
 public class LeaderSelectorTest {
 
     private static final String PATH = "/demo/leader";
@@ -26,23 +23,19 @@ public class LeaderSelectorTest {
             for (int i = 0; i < 10; i++) {
                 CuratorFramework client = getClient();
                 clients.add(client);
-
                 final String name = "client#" + i;
                 LeaderSelector leaderSelector = new LeaderSelector(client, PATH, new LeaderSelectorListener() {
                     @Override
                     public void takeLeadership(CuratorFramework client) throws Exception {
-
                         System.out.println(name + ":I am leader.");
                         Thread.sleep(2000);
                     }
-
                     @Override
                     public void stateChanged(CuratorFramework client, ConnectionState newState) {
 
                     }
                 });
-
-                leaderSelector.autoRequeue();
+                leaderSelector.autoRequeue();//确保此实例在释放领导权后还可能获得领导权
                 leaderSelector.start();
                 selectors.add(leaderSelector);
 
@@ -65,7 +58,7 @@ public class LeaderSelectorTest {
     private static CuratorFramework getClient() {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         CuratorFramework client = CuratorFrameworkFactory.builder()
-                .connectString("192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181")
+                .connectString("localhost:2181")
                 .retryPolicy(retryPolicy)
                 .sessionTimeoutMs(6000)
                 .connectionTimeoutMs(3000)

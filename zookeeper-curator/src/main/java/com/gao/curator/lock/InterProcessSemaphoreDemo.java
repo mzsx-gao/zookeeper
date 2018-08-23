@@ -10,9 +10,6 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 
-/**
- * Created by gao on 2017/9/12.
- */
 public class InterProcessSemaphoreDemo {
     private static final int MAX_LEASE = 10;
     private static final String PATH = "/examples/locks";
@@ -21,7 +18,8 @@ public class InterProcessSemaphoreDemo {
         FakeLimitedResource resource = new FakeLimitedResource();
         try (TestingServer server = new TestingServer()) {
 
-            CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+            CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(),
+                    new ExponentialBackoffRetry(1000, 3));
             client.start();
 
             InterProcessSemaphoreV2 semaphore = new InterProcessSemaphoreV2(client, PATH, MAX_LEASE);

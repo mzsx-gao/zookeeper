@@ -11,27 +11,21 @@ import org.apache.curator.test.TestingServer;
 
 public class CuratorAtomicInteger {
 
-	/** zookeeper地址 */
-	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	/** session超时时间 */
-	static final int SESSION_OUTTIME = 5000;//ms 
+	static final String CONNECT_ADDR = "localhost:2181";
+	static final int SESSION_OUTTIME = 5000;
 	
 	public static void main(String[] args) throws Exception {
 
-		TestingServer server = new TestingServer();
 		//1 重试策略：初试时间为1s 重试10次
 		RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
 		//2 通过工厂创建连接
 		CuratorFramework cf = CuratorFrameworkFactory.builder()
-//					.connectString(server.getConnectString())
 					.connectString(CONNECT_ADDR)
 					.sessionTimeoutMs(SESSION_OUTTIME)
 					.retryPolicy(retryPolicy)
 					.build();
 		//3 开启连接
 		cf.start();
-		//cf.delete().forPath("/super");
-		
 
 		//4 使用DistributedAtomicInteger
 		DistributedAtomicInteger atomicIntger = 

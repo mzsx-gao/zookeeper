@@ -11,9 +11,6 @@ import org.apache.curator.utils.CloseableUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by gao on 2017/9/17.
- */
 public class LeaderLatchTest {
     private static final String PATH = "/demo/leader";
 
@@ -32,14 +29,13 @@ public class LeaderLatchTest {
                     public void isLeader() {
                         System.out.println(leaderLatch.getId() +  ":I am leader. I am doing jobs!");
                     }
-
                     @Override
                     public void notLeader() {
                         System.out.println(leaderLatch.getId() +  ":I am not leader. I will do nothing!");
                     }
                 });
-                latchList.add(leaderLatch);
                 leaderLatch.start();
+                latchList.add(leaderLatch);
             }
             Thread.sleep(Integer.MAX_VALUE);
         } catch (Exception e) {
@@ -58,7 +54,7 @@ public class LeaderLatchTest {
     private static CuratorFramework getClient() {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         CuratorFramework client = CuratorFrameworkFactory.builder()
-                .connectString("192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181")
+                .connectString("localhost:2181")
                 .retryPolicy(retryPolicy)
                 .sessionTimeoutMs(6000)
                 .connectionTimeoutMs(3000)

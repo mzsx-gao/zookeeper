@@ -13,7 +13,7 @@ public class Lock1 {
 		try {
 			reentrantLock.lock();
 			count--;
-			//System.out.println(count);
+			System.out.println(count);
 		} finally {
 			reentrantLock.unlock();
 		}
@@ -23,25 +23,18 @@ public class Lock1 {
 		
 		final CountDownLatch countdown = new CountDownLatch(1);
 		for(int i = 0; i < 10; i++){
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						countdown.await();
-						genarNo();
-						SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
-						System.out.println(sdf.format(new Date()));
-						//System.out.println(System.currentTimeMillis());
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-					}
-				}
+			new Thread(()->{
+                try {
+                    countdown.await();
+                    genarNo();
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
+                    System.out.println(sdf.format(new Date()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                }
 			},"t" + i).start();
 		}
-		Thread.sleep(50);
 		countdown.countDown();
-
-		
 	}
 }
