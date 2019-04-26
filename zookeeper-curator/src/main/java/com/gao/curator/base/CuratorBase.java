@@ -30,13 +30,13 @@ public class CuratorBase {
         createNode(cf);
         //读取节点内容
         readNode(cf);
-        //修改节点内容
+//        //修改节点内容
         editNode(cf);
-        //查询super节点的子节点
+//        //查询super节点的子节点
         getChildren(cf);
-        //删除节点
+//        //删除节点
         deleteNode(cf);
-        //绑定回调接口
+//        //绑定回调接口
         bindCallBack(cf);
 	}
 
@@ -53,7 +53,7 @@ public class CuratorBase {
                 /*为了实现不同的Zookeeper业务之间的隔离，需要为每个业务分配一个独立的命名空间（NameSpace），即指定一个Zookeeper的根路径（官方术语：为Zookeeper添加“Chroot”特性）。
                   例如（下面的例子）当客户端指定了独立命名空间为“/namespace”，那么该客户端对Zookeeper上的数据节点的操作都是基于该目录进行的。
                   通过设置Chroot可以将客户端应用与Zookeeper服务端的一棵子树相对应，在多个应用共用一个Zookeeper集群的场景下，这对于实现不同应用之间的相互隔离十分有意义*/
-				.namespace("namespace")
+//				.namespace("namespace")
                 .build();
         cf.start();
         System.out.println("连接状态..."+cf.getState());
@@ -64,7 +64,6 @@ public class CuratorBase {
     private static void createNode(CuratorFramework cf) throws Exception{
         System.out.println("在super目录下创建节点c1和c2");
         //建立节点 指定节点类型（不加withMode默认为持久类型节点）、路径、数据内容
-        cf.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath("/super/c1","c1内容".getBytes());
         cf.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath("/super/c2","c2内容".getBytes());
     }
 
@@ -104,15 +103,13 @@ public class CuratorBase {
     private static void bindCallBack(CuratorFramework cf) throws Exception{
         System.out.println("测试回调接口...");
         ExecutorService pool = Executors.newCachedThreadPool();
-        cf.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT)
-                .inBackground(new BackgroundCallback() {
-                    @Override
-                    public void processResult(CuratorFramework cf, CuratorEvent ce) throws Exception {
-                        System.out.println("code:" + ce.getResultCode());
-                        System.out.println("type:" + ce.getType());
-                        System.out.println("线程为:" + Thread.currentThread().getName());
-                    }
-                }, pool)
+        cf.create().creatingParentsIfNeeded().inBackground(
+                (curatorFramework,curatorEvent)-> {
+                    System.out.println("code:" + curatorEvent.getResultCode());
+                    System.out.println("type:" + curatorEvent.getType());
+                    System.out.println("线程为:" + Thread.currentThread().getName());
+                },
+                pool)
                 .forPath("/super/c3","c3内容".getBytes());
         Thread.sleep(Integer.MAX_VALUE);
     }

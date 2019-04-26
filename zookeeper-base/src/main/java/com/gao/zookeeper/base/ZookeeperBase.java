@@ -25,8 +25,7 @@ public class ZookeeperBase {
 
 
     //zookeeper地址
-//    private static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-    private static final String CONNECT_ADDR = "172.16.31.137:2181";
+    private static final String CONNECT_ADDR = "localhost:2181";
     //session超时时间
     private static final int SESSION_OUTTIME = 4000;//ms
 
@@ -44,6 +43,8 @@ public class ZookeeperBase {
         ZooKeeper zk =getZk();
         //创建父节点
 		String parentNode = zk.create("/testRoot", "testRoot".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        //顺序节点
+//		String parentNode = zk.create("/testRoot", "testRoot".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
         System.out.println("创建父节点parentNode:"+parentNode);
 
         zk.close();
@@ -121,8 +122,8 @@ public class ZookeeperBase {
     /*
       获取zookeeper连接
       1.关于connectString服务器地址配置
-          格式: 192.168.1.1:2181,192.168.1.2:2181,192.168.1.3:2181
-          这个地址配置有多个ip:port之间逗号分隔,底层操作
+          格式: 192.168.1.1:2181,192.168.1.2:2181,192.168.1.3:2181,这个地址配置有多个ip:port之间逗号分隔;
+          底层操作:
           ConnectStringParser connectStringParser =  new ConnectStringParser(“192.168.1.1:2181,192.168.1.2:2181,192.168.1.3:2181”);
           这个类主要就是解析传入地址列表字符串，将其它保存在一个ArrayList中
           ArrayList<InetSocketAddress> serverAddresses = new ArrayList<InetSocketAddress>();

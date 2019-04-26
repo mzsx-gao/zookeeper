@@ -25,7 +25,7 @@ public class ZooKeeperWatcher implements Watcher{
     private static final int SESSION_TIMEOUT = 100000;
 
     //zookeeper服务器地址,多个地址","隔开
-    private static final String CONNECTION_ADDR = "172.16.31.137:2181";
+    private static final String CONNECTION_ADDR = "localhost:2181";
 
     //定义原子变量
     AtomicInteger seq = new AtomicInteger();
