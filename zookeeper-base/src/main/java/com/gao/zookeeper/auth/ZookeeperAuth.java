@@ -20,7 +20,7 @@ import org.apache.zookeeper.data.Stat;
 public class ZookeeperAuth implements Watcher {
 
     //连接地址
-    private final static String CONNECT_ADDR = "172.16.31.137:2181";
+    private final static String CONNECT_ADDR = "47.103.97.241:2181";
     //测试路径
     private final static String PATH = "/testAuth";
     private final static String PATH_DEL = "/testAuth/delNode";
@@ -66,8 +66,8 @@ public class ZookeeperAuth implements Watcher {
         Thread.sleep(1000);
 
         // 删除数据
-        deleteNodeByBadAuthentication();
         deleteNodeByNoAuthentication();
+        deleteNodeByBadAuthentication();
         deleteNodeByCorrectAuthentication();
         Thread.sleep(1000);
         deleteParent();
@@ -120,6 +120,19 @@ public class ZookeeperAuth implements Watcher {
         connectedSemaphore.await();
     }
 
+    //获取数据：不采用密码
+    private static void getDataByNoAuthentication() {
+        String prefix = "[不使用任何授权信息]";
+        try {
+            System.out.println(prefix + "获取数据：" + PATH);
+            ZooKeeper nozk = new ZooKeeper(CONNECT_ADDR, 2000, null);
+            Thread.sleep(2000);
+            System.out.println(prefix + "成功获取数据：" + nozk.getData(PATH, false, null));
+        } catch (Exception e) {
+            System.err.println(prefix + "获取数据失败，原因：" + e.getMessage());
+        }
+    }
+
     //获取数据：采用错误的密码
     static void getDataByBadAuthentication() {
         String prefix = "[使用错误的授权信息]";
@@ -130,20 +143,6 @@ public class ZookeeperAuth implements Watcher {
             Thread.sleep(2000);
             System.out.println(prefix + "获取数据：" + PATH);
             System.out.println(prefix + "成功获取数据：" + badzk.getData(PATH, false, null));
-        } catch (Exception e) {
-            System.err.println(prefix + "获取数据失败，原因：" + e.getMessage());
-        }
-    }
-
-
-    //获取数据：不采用密码
-    private static void getDataByNoAuthentication() {
-        String prefix = "[不使用任何授权信息]";
-        try {
-            System.out.println(prefix + "获取数据：" + PATH);
-            ZooKeeper nozk = new ZooKeeper(CONNECT_ADDR, 2000, null);
-            Thread.sleep(2000);
-            System.out.println(prefix + "成功获取数据：" + nozk.getData(PATH, false, null));
         } catch (Exception e) {
             System.err.println(prefix + "获取数据失败，原因：" + e.getMessage());
         }
@@ -222,9 +221,7 @@ public class ZookeeperAuth implements Watcher {
      * 不使用密码 删除节点
      */
     static void deleteNodeByNoAuthentication() throws Exception {
-
         String prefix = "[不使用任何授权信息]";
-
         try {
             System.out.println(prefix + "删除节点：" + PATH_DEL);
             ZooKeeper nozk = new ZooKeeper(CONNECT_ADDR, 2000, null);
@@ -241,9 +238,7 @@ public class ZookeeperAuth implements Watcher {
 
     //采用错误的密码删除节点
     static void deleteNodeByBadAuthentication() throws Exception {
-
         String prefix = "[使用错误的授权信息]";
-
         try {
             System.out.println(prefix + "删除节点：" + PATH_DEL);
             ZooKeeper badzk = new ZooKeeper(CONNECT_ADDR, 2000, null);
@@ -262,9 +257,7 @@ public class ZookeeperAuth implements Watcher {
 
     //使用正确的密码删除节点
     static void deleteNodeByCorrectAuthentication() throws Exception {
-
         String prefix = "[使用正确的授权信息]";
-
         try {
             System.out.println(prefix + "删除节点：" + PATH_DEL);
             Stat stat = zk.exists(PATH_DEL, false);

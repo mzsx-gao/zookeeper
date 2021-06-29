@@ -12,20 +12,10 @@ import org.junit.Test;
 import java.util.concurrent.CountDownLatch;
 
 
-/**
- *   名称: ZookeeperBase.java <br>
- *   描述: JAVA操作zookeeper<br>
- *   类型: JAVA <br>
- *   最近修改时间:2017/9/5 10:31.<br>
- *   @version [版本号, V1.0]
- *   @since 2017/9/5 10:31.
- *   @author gaoshudian
- */
 public class ZookeeperBase {
 
-
     //zookeeper地址
-    private static final String CONNECT_ADDR = "localhost:2181";
+    private static final String CONNECT_ADDR = "47.103.97.241:2181";
     //session超时时间
     private static final int SESSION_OUTTIME = 4000;//ms
 
