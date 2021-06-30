@@ -11,9 +11,9 @@ public class ZkClientWatcher2 {
 
 	/** zookeeper地址 */
 //	static final String CONNECT_ADDR = "172.16.35.204:2181,172.16.35.204:2182,172.16.35.204:2183";
-    static final String CONNECT_ADDR = "localhost:2181";
+    static final String CONNECT_ADDR = "47.103.97.241:2181";
 	/** session超时时间 */
-	static final int SESSION_OUTTIME = 5000;//ms 
+	static final int SESSION_OUTTIME = 50000;//ms
 	
 	
 	public static void main(String[] args) throws Exception {

@@ -12,9 +12,9 @@ public class CuratorWatcher1 {
 	
 	//zookeeper地址
 //	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	static final String CONNECT_ADDR = "localhost:2181";
+	static final String CONNECT_ADDR = "47.103.97.241:2181";
 	//session超时时间
-	static final int SESSION_OUTTIME = 5000;//ms 
+	static final int SESSION_OUTTIME = 50000;//ms
 	
 	public static void main(String[] args) throws Exception {
 		
@@ -34,7 +34,7 @@ public class CuratorWatcher1 {
 		final NodeCache cache = new NodeCache(cf, "/super", false);
 		cache.start(true);
 		cache.getListenable().addListener(new NodeCacheListener() {
-			//触发事件为创建节点和更新节点，在删除节点的时候并不触发此操作
+			//触发事件为创建节点和更新节点，在删除子节点的时候并不触发此操作
 			@Override
 			public void nodeChanged() throws Exception {
 				ChildData data = cache.getCurrentData();

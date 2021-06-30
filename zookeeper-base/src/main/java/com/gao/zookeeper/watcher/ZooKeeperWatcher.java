@@ -10,22 +10,13 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- *   名称: ZooKeeperWatcher.java <br>
- *   描述: zookeeper监控功能<br>
- *   类型: JAVA <br>
- *   最近修改时间:2017/9/6 14:32.<br>
- *   @version [版本号, V1.0]
- *   @since 2017/9/6 14:32.
- *   @author gaoshudian
- */
 public class ZooKeeperWatcher implements Watcher{
 
     //定义session失效时间
-    private static final int SESSION_TIMEOUT = 100000;
+    private static final int SESSION_TIMEOUT = 10000;
 
     //zookeeper服务器地址,多个地址","隔开
-    private static final String CONNECTION_ADDR = "localhost:2181";
+    private static final String CONNECTION_ADDR = "47.103.97.241:2181";
 
     //定义原子变量
     AtomicInteger seq = new AtomicInteger();
@@ -49,71 +40,20 @@ public class ZooKeeperWatcher implements Watcher{
 
         //创建父节点
         zkWatch.createPath("/parentNode", System.currentTimeMillis() + "");
-
         //读取父节点数据
         zkWatch.readData("/parentNode", true);
-
         // 更新父节点数据
         zkWatch.updateData("/parentNode", System.currentTimeMillis() + "");
 
         // 读取子节点(getChildren负责设置孩子watch)
         zkWatch.getChildren("/parentNode", true);
-
         // 创建子节点
         zkWatch.createPath("/parentNode/childNode", System.currentTimeMillis() + "");
-
         //修改子节点数据
         zkWatch.updateData("/parentNode/childNode", System.currentTimeMillis() + "");
-
         // 清理节点
         zkWatch.deleteAllTestPath();
         zkWatch.releaseConnection();
-    }
-
-
-    /**
-     * 收到来自Server的Watcher通知后的处理。
-     */
-    @Override
-    public void process(WatchedEvent event) {
-        System.out.println("进入 process 。。。。。event = " + event);
-        if (event == null) {
-            return;
-        }
-        Event.KeeperState keeperState = event.getState();// 连接状态
-        Event.EventType eventType = event.getType();// 事件类型
-        String path = event.getPath();// 受影响的path
-        String logPrefix = "【Watcher-" + this.seq.incrementAndGet() + "】";
-        System.out.println(logPrefix + "收到Watcher通知");
-        System.out.println(logPrefix + "连接状态:\t" + keeperState.toString());
-        System.out.println(logPrefix + "事件类型:\t" + eventType.toString());
-        System.out.println(logPrefix + "受影响的path:\t" + path);
-
-        if (Event.KeeperState.SyncConnected == keeperState) {
-            if (Event.EventType.None == eventType) {// 成功连接上ZK服务器
-                System.out.println(logPrefix + "成功连接上ZK服务器");
-                connectedSemaphore.countDown();
-            }else if (Event.EventType.NodeCreated == eventType) {//创建节点
-                System.out.println(logPrefix + "节点创建");
-                this.exists(path, true);
-            }else if (EventType.NodeDataChanged == eventType) {//更新节点
-                System.out.println(logPrefix + "节点数据更新");
-                System.out.println(logPrefix + "数据内容: " + this.readData("/parentNode", true));
-            }else if (EventType.NodeChildrenChanged == eventType) {//更新子节点
-                System.out.println(logPrefix + "子节点变更");
-                System.out.println(logPrefix + "子节点列表：" + this.getChildren("/parentNode", true));
-            }else if (EventType.NodeDeleted == eventType) {//删除节点
-                System.out.println(logPrefix + "节点 " + path + " 被删除");
-            }
-        }else if (KeeperState.Disconnected == keeperState) {
-            System.out.println(logPrefix + "与ZK服务器断开连接");
-        }else if (KeeperState.AuthFailed == keeperState) {
-            System.out.println(logPrefix + "权限检查失败");
-        }else if (KeeperState.Expired == keeperState) {
-            System.out.println(logPrefix + "会话失效");
-        }
-        System.out.println("--------------------------------------------");
-
     }
 
     //创建ZK连接
@@ -190,6 +130,43 @@ public class ZooKeeperWatcher implements Watcher{
     public void releaseConnection() throws Exception{
         if (this.zk != null) {
             this.zk.close();
+        }
+    }
+
+    /**
+     * 收到来自Server的Watcher通知后的处理。
+     */
+    @Override
+    public void process(WatchedEvent event) {
+        if (event == null) {
+            return;
+        }
+        Event.KeeperState keeperState = event.getState();// 连接状态
+        Event.EventType eventType = event.getType();// 事件类型
+        String path = event.getPath();// 受影响的path
+        String logPrefix = "【Watcher-" + this.seq.incrementAndGet() + "】";
+        System.out.println(logPrefix + "收到Watcher通知---" + "连接状态:"
+                + keeperState.toString()+ ",事件类型:" + eventType.toString()+ ",受影响的path:" + path);
+        if (Event.KeeperState.SyncConnected == keeperState) {
+            if (Event.EventType.None == eventType) {// 成功连接上ZK服务器
+                System.out.println(logPrefix + "成功连接上ZK服务器");
+                connectedSemaphore.countDown();
+            }else if (Event.EventType.NodeCreated == eventType) {//创建节点
+                System.out.println(logPrefix + "节点创建");
+                this.exists(path, true);
+            }else if (EventType.NodeDataChanged == eventType) {//更新节点
+                System.out.println(logPrefix + "节点数据更新,数据内容: " + this.readData("/parentNode", true));
+            }else if (EventType.NodeChildrenChanged == eventType) {//更新子节点
+                System.out.println(logPrefix + "子节点列表：" + this.getChildren("/parentNode", true));
+            }else if (EventType.NodeDeleted == eventType) {//删除节点
+                System.out.println(logPrefix + "节点 " + path + " 被删除");
+            }
+        }else if (KeeperState.Disconnected == keeperState) {
+            System.out.println(logPrefix + "与ZK服务器断开连接");
+        }else if (KeeperState.AuthFailed == keeperState) {
+            System.out.println(logPrefix + "权限检查失败");
+        }else if (KeeperState.Expired == keeperState) {
+            System.out.println(logPrefix + "会话失效");
         }
     }
 }

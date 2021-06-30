@@ -13,7 +13,7 @@ public class CuratorWatcher2 {
 	
 	//zookeeper地址
 //	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	static final String CONNECT_ADDR = "localhost:2181";
+	static final String CONNECT_ADDR = "47.103.97.241:2181";
 	//session超时时间
 	static final int SESSION_OUTTIME = 5000;//ms 
 	

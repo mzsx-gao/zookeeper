@@ -19,7 +19,7 @@ public class CuratorBase {
 	
 	/** zookeeper地址 */
 //	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	static final String CONNECT_ADDR = "localhost:2181";
+	static final String CONNECT_ADDR = "47.103.97.241:2181";
 	/** session超时时间 */
 	static final int SESSION_OUTTIME = 5000;//ms 
 	
@@ -67,24 +67,24 @@ public class CuratorBase {
         cf.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath("/super/c2","c2内容".getBytes());
     }
 
-    //删除节点
-    private static void deleteNode(CuratorFramework cf) throws Exception{
-        System.out.println("删除节点super");
-        Thread.sleep(2000);
-        cf.delete().guaranteed().deletingChildrenIfNeeded().forPath("/super");
-    }
-
     //读取节点
     private static void readNode(CuratorFramework cf) throws Exception{
         String ret1 = new String(cf.getData().forPath("/super/c2"));
-		System.out.println("读取节点super/c2的内容:"+ret1);
+        System.out.println("读取节点super/c2的内容:"+ret1);
     }
 
     //修改节点
     private static void editNode(CuratorFramework cf) throws Exception{
         cf.setData().forPath("/super/c2", "修改c2内容".getBytes());
-		String ret2 = new String(cf.getData().forPath("/super/c2"));
-		System.out.println("修改节点super/c2后的内容:"+ret2);
+        String ret2 = new String(cf.getData().forPath("/super/c2"));
+        System.out.println("修改节点super/c2后的内容:"+ret2);
+    }
+
+    //删除节点
+    private static void deleteNode(CuratorFramework cf) throws Exception{
+        System.out.println("删除节点super");
+        Thread.sleep(2000);
+        cf.delete().guaranteed().deletingChildrenIfNeeded().forPath("/super");
     }
 
     //读取子节点getChildren方法 和 判断节点是否存在checkExists方法
