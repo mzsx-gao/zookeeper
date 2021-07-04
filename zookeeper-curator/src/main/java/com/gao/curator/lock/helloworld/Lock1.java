@@ -1,4 +1,4 @@
-package com.gao.curator.lock;
+package com.gao.curator.lock.helloworld;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

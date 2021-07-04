@@ -34,7 +34,7 @@ public class CuratorWatcher1 {
 		final NodeCache cache = new NodeCache(cf, "/super", false);
 		cache.start(true);
 		cache.getListenable().addListener(new NodeCacheListener() {
-			//触发事件为创建节点和更新节点，在删除子节点的时候并不触发此操作
+			//触发事件为创建、更新和删除节点，在删除子节点的时候并不触发此操作
 			@Override
 			public void nodeChanged() throws Exception {
 				ChildData data = cache.getCurrentData();

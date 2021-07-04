@@ -1,4 +1,4 @@
-package com.gao.curator.lock;
+package com.gao.curator.lock.interProcessMutex;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -7,7 +7,6 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.curator.utils.CloseableUtils;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -62,16 +61,16 @@ public class InterProcessMutexDemo {
         try {
             for (int i = 0; i < 5; ++i) {
                 final int index = i;
-                threadPools.submit(() ->{
+                threadPools.submit(() -> {
                     CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(),
                             new ExponentialBackoffRetry(1000, 3));
+                    client.start();
+                    final InterProcessMutexDemo example = new InterProcessMutexDemo(client, PATH, resource, "Client " + index);
                     try {
-                        client.start();
-                        final InterProcessMutexDemo example = new InterProcessMutexDemo(client, PATH,
-                                resource, "Client " + index);
-                        for (int j = 0; j < 5; ++j) {
-                            example.doWork(10, TimeUnit.SECONDS);
-                        }
+                        example.doWork(10, TimeUnit.SECONDS);
+//                        for (int j = 0; j < 5; ++j) {
+//                            example.doWork(10, TimeUnit.SECONDS);
+//                        }
                     } catch (Throwable e) {
                         e.printStackTrace();
                     } finally {

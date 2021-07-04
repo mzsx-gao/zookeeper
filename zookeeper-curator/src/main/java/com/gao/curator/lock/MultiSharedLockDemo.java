@@ -1,5 +1,6 @@
 package com.gao.curator.lock;
 
+import com.gao.curator.lock.interProcessMutex.FakeLimitedResource;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessLock;

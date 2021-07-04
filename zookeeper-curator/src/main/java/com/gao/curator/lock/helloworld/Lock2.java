@@ -1,4 +1,4 @@
-package com.gao.curator.lock;
+package com.gao.curator.lock.helloworld;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,10 +11,9 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
-
 public class Lock2 {
 
-	static final String CONNECT_ADDR = "localhost:2181";
+	static final String CONNECT_ADDR = "47.103.97.241:2181";
 	static final int SESSION_OUTTIME = 5000;//ms
 	
 	static int count = 10;
@@ -46,30 +45,27 @@ public class Lock2 {
 		final CountDownLatch countdown = new CountDownLatch(1);
 		
 		for(int i = 0; i < 10; i++){
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
+			new Thread(()->{
+				try {
+					countdown.await();
+					//加锁
+					lock.acquire();
+					//reentrantLock.lock();
+					//-------------业务处理开始
+					//genarNo();
+					SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
+					System.out.println(sdf.format(new Date()));
+					//System.out.println(System.currentTimeMillis());
+					//-------------业务处理结束
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
 					try {
-						countdown.await();
-						//加锁
-						lock.acquire();
-						//reentrantLock.lock();
-						//-------------业务处理开始
-						//genarNo();
-						SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss|SSS");
-						System.out.println(sdf.format(new Date()));
-						//System.out.println(System.currentTimeMillis());
-						//-------------业务处理结束
+						//释放
+						lock.release();
+						//reentrantLock.unlock();
 					} catch (Exception e) {
 						e.printStackTrace();
-					} finally {
-						try {
-							//释放
-							lock.release();
-							//reentrantLock.unlock();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
 					}
 				}
 			},"t" + i).start();
