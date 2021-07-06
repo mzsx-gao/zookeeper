@@ -1,6 +1,5 @@
 package com.gao.curator.lock;
 
-import com.gao.curator.lock.interProcessMutex.FakeLimitedResource;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessSemaphoreMutex;
@@ -47,7 +46,7 @@ public class InterProcessSemaphoreMutexDemo {
         } finally {
             System.out.println(clientName + " 释放锁");
             lock.release(); // always release the lock in a finally block
-            lock.release(); // 获取锁几次 释放锁也要几次
+//            lock.release(); // 获取锁几次 释放锁也要几次
         }
     }
 

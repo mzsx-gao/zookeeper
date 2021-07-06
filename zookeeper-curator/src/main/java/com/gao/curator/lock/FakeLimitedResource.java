@@ -1,4 +1,4 @@
-package com.gao.curator.lock.interProcessMutex;
+package com.gao.curator.lock;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

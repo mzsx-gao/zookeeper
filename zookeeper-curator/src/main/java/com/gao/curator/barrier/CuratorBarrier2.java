@@ -5,22 +5,22 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.test.TestingServer;
 
 public class CuratorBarrier2 {
 
-	static final String CONNECT_ADDR = "localhost:2181";
 	static final int SESSION_OUTTIME = 5000;//ms
 	
 	static DistributedBarrier barrier = null;
 	
 	public static void main(String[] args) throws Exception {
-
+        final TestingServer server = new TestingServer();
 		for(int i = 0; i < 5; i++){
 			new Thread(()->{
                 try {
                     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
                     CuratorFramework cf = CuratorFrameworkFactory.builder()
-                                .connectString(CONNECT_ADDR)
+                                .connectString(server.getConnectString())
                                 .sessionTimeoutMs(SESSION_OUTTIME)
                                 .retryPolicy(retryPolicy)
                                 .build();

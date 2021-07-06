@@ -1,6 +1,5 @@
 package com.gao.curator.lock;
 
-import com.gao.curator.lock.interProcessMutex.FakeLimitedResource;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessSemaphoreV2;
@@ -10,7 +9,9 @@ import org.apache.curator.test.TestingServer;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * 控制多个线程同时访问
+ */
 public class InterProcessSemaphoreDemo {
     private static final int MAX_LEASE = 10;
     private static final String PATH = "/examples/locks";

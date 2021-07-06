@@ -1,4 +1,4 @@
-package com.gao.curator.lock.interProcessMutex;
+package com.gao.curator.lock;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -13,12 +13,15 @@ import java.util.concurrent.TimeUnit;
 
 /*
   可重入共享锁-Shared Reentrant Lock
-  Shared意味着锁是全局可见的， 客户端都可以请求锁。 Reentrant和JDK的ReentrantLock类似，即可重入,意味着同一个客户端在拥有锁的同时，可以多次获取，不会被阻塞。
+  Shared意味着锁是全局可见的， 客户端都可以请求锁。 Reentrant和JDK的ReentrantLock类似，即可重入,意味着同一个客户端在拥有锁的同时，
+  可以多次获取，不会被阻塞。
 
   下面例子说明：
-  1.生成5个client,每个client重复执行5次 请求锁–访问资源–释放锁的过程。每个client都在独立的线程中。 结果可以看到，锁是随机的被每个实例排他性的使用。
+  1.生成5个client,每个client重复执行5次 请求锁–访问资源–释放锁的过程。每个client都在独立的线程中。 结果可以看到，
+  锁是随机的被每个实例排他性的使用。
   2.既然是可重用的，你可以在一个线程中多次调用acquire(),在线程拥有锁时它总是返回true。
-  3.你不应该在多个线程中用同一个InterProcessMutex， 你可以在每个线程中都生成一个新的InterProcessMutex实例，它们的path都一样，这样它们可以共享同一个锁
+  3.你不应该在多个线程中用同一个InterProcessMutex， 你可以在每个线程中都生成一个新的InterProcessMutex实例，
+  它们的path都一样，这样它们可以共享同一个锁
 
  shutdown和awaitTermination为接口ExecutorService定义的两个方法，一般情况配合使用来关闭线程池。
     1.shutdown方法：平滑的关闭ExecutorService，当此方法被调用时，ExecutorService停止接收新的任务并且等待已经提交

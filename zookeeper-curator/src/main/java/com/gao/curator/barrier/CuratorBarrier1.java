@@ -6,19 +6,21 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.barriers.DistributedDoubleBarrier;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.test.TestingServer;
 
+/**
+ * 双栅栏Double Barrier
+ */
 public class CuratorBarrier1 {
 
-	static final String CONNECT_ADDR = "localhost:2181";
-
 	public static void main(String[] args) throws Exception {
-
+        final TestingServer server = new TestingServer();
 		for(int i = 0; i < 5; i++){
 			new Thread(()->{
                 try {
                     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
                     CuratorFramework cf = CuratorFrameworkFactory.builder()
-                                .connectString(CONNECT_ADDR)
+                                .connectString(server.getConnectString())
                                 .retryPolicy(retryPolicy)
                                 .build();
                     cf.start();
