@@ -19,7 +19,8 @@ public class CuratorBase {
 	
 	/** zookeeper地址 */
 //	static final String CONNECT_ADDR = "192.168.0.206:2181,192.168.0.207:2181,192.168.0.208:2181";
-	static final String CONNECT_ADDR = "47.103.97.241:2181";
+//	static final String CONNECT_ADDR = "47.103.97.241:2181";
+	static final String CONNECT_ADDR = "127.0.0.1:2181";
 	/** session超时时间 */
 	static final int SESSION_OUTTIME = 5000;//ms 
 	
@@ -114,4 +115,10 @@ public class CuratorBase {
         Thread.sleep(Integer.MAX_VALUE);
     }
 
+    @Test
+    public void test() throws Exception{
+        CuratorFramework cf = getConnection();
+        //config, develop, develop-redis, services, zookeeper
+        cf.delete().guaranteed().deletingChildrenIfNeeded().forPath("/zookeeper");
+    }
 }
